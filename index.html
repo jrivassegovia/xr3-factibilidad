@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>XR3 · Factibilidad FTTH</title>
+<meta name="theme-color" content="#12263f">
+<meta name="description" content="Alternativas de CTO cercanas con evidencia TOA para técnicos XR3.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
+<style>
+:root{
+  --ink:#12263f; --bg:#e9edf2; --paper:#fff; --line:#d3dae3; --line2:#e6eaf0; --tx:#17212c; --mut:#576677;
+  --fib:#1d5fd1; --fibbg:#e8effc; --alta:#1f7f45; --altabg:#e3f3e9; --media:#b86e00; --mediabg:#fff1d6;
+  --baja:#6f7f90; --bajabg:#edf0f3; --rojo:#bf3027; --rojobg:#fbe8e6;
+  --f:'Barlow',system-ui,-apple-system,'Segoe UI',Arial,sans-serif; --fc:'Barlow Semi Condensed','Barlow',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:16px/1.45 var(--f);background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom)}
+:focus-visible{outline:3px solid #8db4f5;outline-offset:2px}
+header{background:var(--ink);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 12px;position:sticky;top:0;z-index:1100}
+header .t{font-weight:700;font-size:18px}
+header .t span{font-weight:500;opacity:.7}
+header .b{font:500 12.5px var(--fc);color:#b9c9dd;margin-top:2px}
+main{max-width:640px;margin:0 auto;padding:12px 12px 32px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+h2{font-size:18px;margin:0 0 4px;color:var(--ink)}
+.mut{color:var(--mut)}
+.small{font-size:13.5px}
+label{display:block;font-weight:600;font-size:14px;margin:12px 0 5px;color:var(--ink)}
+input,select{width:100%;height:48px;padding:0 12px;border:1px solid #bcc7d4;border-radius:10px;font:16px var(--f);color:var(--tx);background:#fff}
+input:focus,select:focus{outline:none;border-color:var(--fib);box-shadow:0 0 0 3px var(--fibbg)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:10px;font:600 16px var(--f);cursor:pointer;border:0;text-decoration:none}
+.btn.pri{background:var(--fib);color:#fff;margin-top:16px}
+.btn.sec{background:#fff;color:var(--ink);border:1px solid #bcc7d4}
+.btn:disabled{opacity:.55}
+.gps{margin-top:12px}
+.gps.ok{background:var(--altabg);border-color:var(--alta);color:var(--alta)}
+.gps-txt{font-size:13px;color:var(--mut);margin-top:5px;min-height:18px}
+details.otra{margin-top:12px;border-top:1px solid var(--line2);padding-top:6px}
+details.otra summary{cursor:pointer;font-weight:600;font-size:14.5px;color:var(--fib);padding:8px 0;list-style:none}
+details.otra summary::before{content:'+ '}
+details.otra[open] summary::before{content:'− '}
+.estado{font-size:14px;margin-top:10px;min-height:20px;color:var(--mut)}
+.estado.err{color:var(--rojo)}
+.oculto{display:none!important}
+/* resultados */
+.consulta{font-size:14.5px}
+.consulta b{color:var(--ink)}
+.av{font-size:14px;padding:9px 12px;border-radius:10px;background:var(--mediabg);border-left:4px solid var(--media);margin-top:8px}
+.av.rojo{background:var(--rojobg);border-color:var(--rojo)}
+.av.gris{background:var(--bajabg);border-color:var(--baja)}
+.mejor{border:2px solid var(--baja);background:var(--bajabg)}
+.mejor.A{border-color:var(--alta);background:#f1f9f4}
+.mejor.M{border-color:#e0a800;background:#fffaeb}
+.etq{display:inline-block;font:700 13px var(--fc);color:#fff;background:var(--ink);padding:3px 11px;border-radius:12px}
+.mejor.A .etq{background:var(--alta)}.mejor.M .etq{background:#b86e00}
+.nombre{font-size:23px;font-weight:700;color:var(--ink);margin:8px 0 0;line-height:1.15}
+.nombre small{font-size:15px;font-weight:500;color:var(--mut)}
+.nivel{display:inline-flex;align-items:center;gap:6px;font:700 13px var(--fc);padding:3px 10px;border-radius:20px;margin-top:6px}
+.nivel::before{content:'';width:8px;height:8px;border-radius:50%;background:currentColor}
+.nivel.A{background:var(--altabg);color:var(--alta)}.nivel.M{background:var(--mediabg);color:var(--media)}.nivel.B{background:var(--bajabg);color:var(--baja)}.nivel.R{background:var(--rojobg);color:var(--rojo)}
+.resumen{font-size:16px;margin:8px 0 0}
+.puerto{margin-top:12px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.puerto .k{font-size:12.5px;color:var(--mut)}
+.puerto .v{font:700 26px/1.1 var(--fc);color:var(--ink);letter-spacing:.3px}
+.datos{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin:12px 0 0}
+.datos dt{font-size:12.5px;color:var(--mut)}
+.datos dd{margin:0;font:600 16px var(--fc)}
+.foto{margin:12px 0 0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#dfe5ec}
+.foto img{display:block;width:100%;height:auto}
+.foto figcaption{font-size:12.5px;color:var(--mut);padding:5px 9px;background:#fff}
+.tira{display:inline-flex;gap:4px;padding:7px 8px;background:#26394f;border-radius:8px;margin-top:12px}
+.pt{width:22px;height:27px;border-radius:5px;border:2px solid #8fa2b7;position:relative}
+.pt::after{content:'';position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:#8fa2b7;opacity:.5}
+.pt.oc{background:#c9d4e0;border-color:#c9d4e0}.pt.oc::after{background:#26394f;opacity:1}
+.pt.rs{border-color:#f0b347;background:repeating-linear-gradient(45deg,#f0b347 0 3px,transparent 3px 6px)}.pt.rs::after{display:none}
+.pt.nv{background:#7fb6ff;border-color:#7fb6ff}.pt.nv::after{background:#26394f;opacity:1}
+.pt.li{border-color:#5fd08c}.pt.li::after{background:#5fd08c;opacity:1}
+.pt.ac{background:#c9d4e0;border-color:#c9d4e0}.pt.ac::after{background:#26394f;opacity:1}
+.pt.nd{border-style:dashed;border-color:#5b7088}.pt.nd::after{display:none}
+.tira-ley{font-size:12.5px;color:var(--mut);margin-top:4px}
+ul.ev{list-style:none;margin:12px 0 0;padding:0;font-size:14.5px}
+ul.ev li{padding-left:20px;position:relative;margin:4px 0}
+ul.ev li::before{content:'+';position:absolute;left:3px;font-weight:700;color:var(--alta)}
+ul.ev li.neg::before{content:'−';color:var(--rojo)}
+ul.ev li.neg{color:#7a241d}
+.acc2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.acc2 .btn{height:46px;font-size:15px}
+details.alt{border-top:1px solid var(--line2);padding:4px 0}
+details.alt:first-of-type{border-top:0}
+details.alt summary{cursor:pointer;list-style:none;display:flex;gap:12px;align-items:center;padding:10px 0}
+details.alt summary .r{font:700 26px/1 var(--fc);width:24px;color:var(--line)}
+details.alt.A summary .r{color:var(--alta)}details.alt.M summary .r{color:var(--media)}
+details.alt summary .n{font-weight:700;color:var(--ink)}
+details.alt summary .d{font-size:13.5px;color:var(--mut)}
+#mapa{height:360px;border-radius:10px;border:1px solid var(--line);margin-top:8px}
+.ley{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;margin-top:8px}
+.ley i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+ol.que{margin:6px 0 0;padding-left:20px;font-size:15px}
+ol.que li{margin:5px 0}
+.leaflet-tooltip.nro{background:none;border:0;box-shadow:none;color:#fff;font:700 12px var(--fc);padding:0}
+.leaflet-tooltip.nro::before{display:none}
+.pie{font-size:12.5px;color:var(--mut);text-align:center;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <div class="t">XR3 <span>Factibilidad FTTH</span></div>
+  <div class="b" id="base">Conectando…</div>
+</header>
+<main>
+  <section class="card oculto" id="cardClave">
+    <h2>Clave de acceso</h2>
+    <p class="mut small">Pídela a tu coordinador. Se guarda en este celular.</p>
+    <label for="clave">Clave</label><input id="clave" type="password" autocomplete="off">
+    <button class="btn pri" id="btClave" type="button">Entrar</button>
+    <div class="estado" id="estClave" role="status"></div>
+  </section>
+
+  <section class="card" id="cardForm">
+    <h2>¿Dónde no se puede conectar?</h2>
+    <p class="mut small">Busca CTO cercanas con instalaciones recientes. Con la OT o tu ubicación basta.</p>
+    <form id="f" autocomplete="off" novalidate>
+      <label for="ot">OT</label>
+      <input id="ot" placeholder="1-3OIEL28T" autocapitalize="characters" spellcheck="false">
+      <button class="btn sec gps" id="btGps" type="button">📍 Usar mi ubicación</button>
+      <div class="gps-txt" id="gpsTxt">Párate frente al domicilio para mayor precisión.</div>
+      <details class="otra" id="otra"><summary>Buscar por dirección</summary>
+        <label for="comuna">Comuna</label><input id="comuna" list="lcomunas" placeholder="Calama"><datalist id="lcomunas"></datalist>
+        <label for="dir">Dirección</label><input id="dir" placeholder="Antofagasta 2171">
+      </details>
+      <label for="prob">Problema</label>
+      <select id="prob">
+        <option value="infactible_cto">Infactible por CTO asignada</option>
+        <option value="cto_copada">CTO / NAP copada</option>
+        <option value="sin_recursos">Sin recursos o sin puerto disponible</option>
+        <option value="georef">Dirección mal georreferenciada</option>
+        <option value="niveles">CTO con problemas de niveles o potencia</option>
+        <option value="nap_ubic">NAP no encontrada o sin acceso</option>
+        <option value="migracion">No puedo ejecutar la migración</option>
+        <option value="instalacion">No puedo ejecutar la instalación</option>
+        <option value="otro">Otro</option>
+      </select>
+      <button class="btn pri" id="bt" type="submit">Buscar alternativas</button>
+      <div class="estado" id="est" role="status" aria-live="polite"></div>
+    </form>
+  </section>
+
+  <div id="res"></div>
+  <p class="pie">Evidencia histórica de TOA: no confirma que hoy haya un puerto libre. Valida siempre en terreno.</p>
+</main>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
