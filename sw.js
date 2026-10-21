@@ -1,8 +1,8 @@
 // Service worker: guarda la app (pantallas, íconos, librería de mapas) para que abra rápido y sin señal.
 // Las consultas al servicio de Apps Script NUNCA se guardan: siempre van a la red.
-const VERSION = 'xr3-fact-v1';
+const VERSION = 'xr3-fact-v2';
 const APP = ['./', 'index.html', 'app.js', 'config.js', 'manifest.webmanifest',
-  'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
+  'icon-192.png', 'icon-512.png', 'apple-touch-icon.png',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'];
 
