@@ -77,7 +77,7 @@ $('btGps').onclick = () => {
 /* ---------- búsqueda ---------- */
 $('f').addEventListener('submit', async ev => {
   ev.preventDefault();
-  const p = { api: 'buscar', ot: $('ot').value.trim().toUpperCase(), comuna: $('comuna').value.trim(), dir: $('dir').value.trim(), prob: $('prob').value };
+  const p = { api: 'buscar', ot: $('ot').value.trim().toUpperCase(), comuna: $('comuna').value.trim(), dir: $('dir').value.trim(), prob: 'infactible_cto' };   // caso general: buscar CTO alternativa
   if (GPS) Object.assign(p, { lat: GPS.lat.toFixed(6), lon: GPS.lon.toFixed(6), acc: Math.round(GPS.acc) });
   if (!p.ot && !GPS && !p.dir) { estado('Ingresa la OT, usa tu ubicación o busca por dirección.', 1); return; }
   if (p.dir && !p.comuna && !p.ot && !GPS) { estado('Indica la comuna de la dirección.', 1); $('otra').open = true; $('comuna').focus(); return; }
@@ -126,7 +126,7 @@ function mostrar(r) {
   const c = r.consulta, alts = r.alternativas, m = alts[0];
   let h = `<section class="card consulta">
     <div><b>${esc(c.dir || 'Ubicación GPS')}</b>, ${esc(c.comuna)}${c.ot ? ' · OT ' + esc(c.ot) : ''}</div>
-    <div class="mut small">${esc(c.probTxt)}${c.otEstado ? ` · OT ${esc(c.otEstado.tipo)}, ${esc(c.otEstado.estado)}${c.otEstado.hoy ? ' hoy' : ' el ' + fd(c.otEstado.fecha)}` : ''}</div>
+    ${c.otEstado ? `<div class="mut small">OT ${esc(c.otEstado.tipo)}, ${esc(c.otEstado.estado)}${c.otEstado.hoy ? ' hoy' : ' el ' + fd(c.otEstado.fecha)}</div>` : ''}
     <div class="mut small">Ubicación: ${esc(c.metodo || '—')}${c.detalle ? ' · ' + esc(c.detalle) : ''}</div>
     ${c.aviso ? `<div class="av gris">${esc(c.aviso)}</div>` : ''}
     ${c.alertas.map(a => `<div class="av ${esc(a.tipo)}">${esc(a.txt)}</div>`).join('')}
@@ -208,7 +208,7 @@ async function rutasFaltantes(r) {
 /* ---------- compartir (WhatsApp u otra app) ---------- */
 function compartir() {
   const r = ULT; if (!r) return; const c = r.consulta, m = r.alternativas[0];
-  const L1 = [`Factibilidad FTTH XR3 · ${c.dir || 'ubicación GPS'}, ${c.comuna}${c.ot ? ' · OT ' + c.ot : ''}`, `Problema: ${c.probTxt}`];
+  const L1 = [`Factibilidad FTTH XR3 · ${c.dir || 'ubicación GPS'}, ${c.comuna}${c.ot ? ' · OT ' + c.ot : ''}`];
   r.alternativas.forEach(a => L1.push(`${a.rank}) ${a.nombre}${a.cto_n != null ? ' (CTO ' + a.cto_n + ')' : ''} · Puerto NAP ${a.puerto_nap || '—'} · ${NIV[a.nivel]} · ${fm(a.dCto)} línea recta${a.ruta && a.ruta.ok ? ', ' + fm(a.ruta.m) + ' por calles' : ''}${a.vecino ? ' · ~' + a.vecino.lib + ' libres (CV ' + fd(a.vecino.fecha) + ')' : ''}`));
   if (r.asignada) L1.push(`CTO asignada: ${r.asignada.nombre} · Puerto NAP ${r.asignada.puerto_nap || '—'}`);
   if (m && m.lat != null) L1.push('Mejor opción en mapa: ' + `https://maps.google.com/?q=${m.lat},${m.lon}`);
