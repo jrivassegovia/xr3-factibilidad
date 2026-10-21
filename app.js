@@ -25,6 +25,21 @@ async function api(params) {
   return j;
 }
 
+/* ---------- alerta de datos desactualizados ---------- */
+function frescura(ind){
+  const out=[], ahora=new Date(), h=ahora.getHours()+ahora.getMinutes()/60;
+  const pad=n=>String(n).padStart(2,'0'), hhmm=d=>pad(d.getHours())+':'+pad(d.getMinutes()), ddmm=d=>pad(d.getDate())+'-'+pad(d.getMonth()+1);
+  const g=/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/.exec(ind.generado||'');
+  if(g){ const t=new Date(+g[1],+g[2]-1,+g[3],+g[4],+g[5]);
+    if(h>=7.5 && h<=22.5 && (ahora-t)/36e5>2) out.push('Los datos no se actualizan desde el '+ddmm(t)+' a las '+hhmm(t)+'. Revisar que el PC de XR3 esté encendido con Google Drive abierto (tarea Factibilidad FTTH).'); }
+  const i=/_(\d\d)_(\d\d)_(\d\d)_(\d\d)(\d\d)[.]/.exec(ind.intradia||'');
+  if(i){ const t=new Date(2000+(+i[3]),+i[1]-1,+i[2],+i[4],+i[5]), hoy=t.toDateString()===ahora.toDateString();
+    if(ahora.getDay()!==0 && h>=10 && h<=21.5 && (!hoy || (ahora-t)/36e5>2)) out.push('El reporte TOA de hoy no llega desde '+(hoy?'las '+hhmm(t):'el '+ddmm(t))+'. Revisar el BOT TOA: las OT de hoy pueden no aparecer.'); }
+  if(ind.hasta){ const t=new Date(ind.hasta+'T12:00:00'), dias=Math.floor((ahora-t)/864e5);
+    if(dias>2) out.push('Falta el reporte diario: la base llega solo hasta el '+ddmm(t)+'.'); }
+  return out;
+}
+
 /* ---------- inicio ---------- */
 async function init() {
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
@@ -35,6 +50,7 @@ async function init() {
     $('lcomunas').innerHTML = j.comunas.map(c => `<option value="${esc(c.comuna)}">${esc(c.czona)}</option>`).join('');
     const hi = (j.intradia || '').replace(/^Actividades-VTR_\d\d_\d\d_\d\d_(\d\d)(\d\d).*$/, '$1:$2');
     $('base').textContent = `Datos TOA del ${fd(j.desde)} al ${fd(j.hasta)}${hi && hi !== j.intradia ? ' y de hoy hasta las ' + hi : ''}`;
+    const fr = frescura(j); if (fr.length) { $('frescura').innerHTML = fr.map(x => `<div>${esc(x)}</div>`).join(''); $('frescura').classList.remove('oculto'); }
   } catch (e) { $('base').textContent = navigator.onLine ? 'Sin conexión con el servicio: ' + e.message : 'Sin señal: la búsqueda necesita internet.'; }
 }
 function pedirClave(msg) {
